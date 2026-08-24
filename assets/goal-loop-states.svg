@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700" role="img" aria-labelledby="title2 desc2">
+  <title id="title2">止まらないための6状態</title>
+  <desc id="desc2">左に、同じタスク内で続く3状態。CONTINUEはAI安全作業がまだ残っているとき、REPLANは次の一手が無いとき、RECOVERは手段が失敗したとき。右に、そこで終わる3状態。DONEはDoD達成で完了、HANDOFFは人間の操作だけが残ったとき、HARD_BLOCKは経路が尽きたとき。下部に、同じ手段の再試行は1回まで、独立3経路まで粘る、と書かれている。</desc>
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07152c"/>
+      <stop offset="1" stop-color="#10233f"/>
+    </linearGradient>
+    <filter id="shadow2" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000814" flood-opacity="0.32"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="700" rx="34" fill="url(#bg2)"/>
+
+  <text x="60" y="58" fill="#e6f4ff" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="48" font-weight="700">止まらないための6状態</text>
+  <text x="60" y="106" fill="#8fb3d9" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="38">1周ごとに、次の状態を機械的に選ぶ</text>
+
+  <rect x="60" y="146" width="640" height="464" rx="26" fill="#0c2140" stroke="#2f568a" stroke-width="3"/>
+  <text x="90" y="202" fill="#7dd3fc" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="42" font-weight="700">同じタスク内で続く</text>
+
+  <g filter="url(#shadow2)">
+    <rect x="90" y="222" width="580" height="110" rx="18" fill="#16304f" stroke="#3a6396" stroke-width="3"/>
+    <rect x="90" y="348" width="580" height="110" rx="18" fill="#16304f" stroke="#3a6396" stroke-width="3"/>
+    <rect x="90" y="474" width="580" height="110" rx="18" fill="#16304f" stroke="#3a6396" stroke-width="3"/>
+  </g>
+  <text x="118" y="272" fill="#e6f4ff" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="42" font-weight="700">CONTINUE</text>
+  <text x="118" y="316" fill="#9fc4e8" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="38">AI安全作業がまだ残っている</text>
+  <text x="118" y="398" fill="#e6f4ff" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="42" font-weight="700">REPLAN</text>
+  <text x="118" y="442" fill="#9fc4e8" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="38">次の一手が無い → 選び直す</text>
+  <text x="118" y="524" fill="#e6f4ff" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="42" font-weight="700">RECOVER</text>
+  <text x="118" y="568" fill="#9fc4e8" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="38">手段が失敗 → 別経路へ</text>
+
+  <rect x="740" y="146" width="400" height="464" rx="26" fill="#2c1b26" stroke="#8a4a56" stroke-width="3"/>
+  <text x="770" y="202" fill="#ffb3a1" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="42" font-weight="700">そこで終わる</text>
+
+  <g filter="url(#shadow2)">
+    <rect x="770" y="222" width="340" height="110" rx="18" fill="#3a2430" stroke="#a45c69" stroke-width="3"/>
+    <rect x="770" y="348" width="340" height="110" rx="18" fill="#3a2430" stroke="#a45c69" stroke-width="3"/>
+    <rect x="770" y="474" width="340" height="110" rx="18" fill="#3a2430" stroke="#a45c69" stroke-width="3"/>
+  </g>
+  <text x="798" y="272" fill="#ffe6de" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="42" font-weight="700">DONE</text>
+  <text x="798" y="316" fill="#d6b6ae" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="38">DoD達成で完了</text>
+  <text x="798" y="398" fill="#ffe6de" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="42" font-weight="700">HANDOFF</text>
+  <text x="798" y="442" fill="#d6b6ae" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="38">人間の操作だけ</text>
+  <text x="798" y="524" fill="#ffe6de" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="42" font-weight="700">HARD_BLOCK</text>
+  <text x="798" y="568" fill="#d6b6ae" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="38">経路が尽きた</text>
+
+  <rect x="60" y="630" width="1080" height="52" rx="16" fill="#0f2745" stroke="#2a4a78" stroke-width="3"/>
+  <text x="92" y="668" fill="#cfe6ff" font-family="Noto Sans CJK JP, Noto Sans JP, Yu Gothic, sans-serif" font-size="38">同じ手段の再試行は1回まで／独立3経路まで粘る</text>
+</svg>

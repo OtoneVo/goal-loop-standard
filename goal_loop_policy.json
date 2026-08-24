@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "default_action": "replan",
+  "hard_block_after_independent_failures_without_alternative": 3,
+  "same_method_retry_limit": 1,
+  "defer_non_gating_human_decisions": true,
+  "writeback_required_by_default": true,
+  "terminal_states": [
+    "done",
+    "handoff",
+    "hard_block"
+  ],
+  "decision_order": [
+    "done",
+    "continue_ai_safe_work",
+    "resolve_writeback_gate",
+    "recover_known_safe_alternative",
+    "handoff_known_human_action",
+    "hard_block_protected_or_exhausted",
+    "continue_with_assumption",
+    "replan_switch_from_retried_method",
+    "replan_find_concrete_action"
+  ],
+  "decisions": {
+    "continue": "許可済みのAI安全作業を同一タスク内で続ける",
+    "replan": "停止せず、既存情報から具体的な次のAI安全作業を選び直す",
+    "continue_with_assumption": "軽微で可逆な仮定を記録して続ける",
+    "recover": "同じ手段を反復せず、独立した安全な代替経路へ切り替える",
+    "handoff": "AI安全作業を使い切り、人間操作だけが残った状態で渡す",
+    "hard_block": "権限・不可逆操作・経路枯渇により安全に続けられない",
+    "done": "DoDの証拠確認と書き戻しが完了している"
+  }
+}
