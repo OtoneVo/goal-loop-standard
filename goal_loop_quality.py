@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import math
 import os
@@ -47,6 +48,34 @@ def start(goal, criteria, limits=None):
             "residuals": [], "next_actions": [], "pending": []}
 
 
+def pending_key(item):
+    """Stable identifier, including legacy checkpoint items without an id."""
+    return hashlib.sha256(json.dumps(item, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+
+
+def resolve_pending(state, key, *, evidence, authority, verify_authorization):
+    """Trusted host verifies the specific item, actor and real evidence before removal.
+
+    No default/self-asserted approval exists. Do not expose the verifier to model
+    control; it must consult the application's actual approval/dependency authority.
+    """
+    items = state.get("pending", [])
+    item = next((i for i in items if pending_key(i) == key), None)
+    if item is None:
+        raise ValueError("unknown pending item")
+    if not isinstance(evidence, str) or not evidence.strip() or not isinstance(authority, str) or not authority.strip():
+        raise ValueError("resolution evidence and authority required")
+    if not callable(verify_authorization) or verify_authorization(copy.deepcopy(item), authority, evidence) is not True:
+        raise PermissionError("pending resolution not authorized")
+    s = copy.deepcopy(state)
+    s["pending"] = [i for i in s["pending"] if pending_key(i) != key]
+    s.setdefault("pending_resolutions", []).append({"item": copy.deepcopy(item), "authority": authority, "evidence": evidence})
+    # A resolution is not completion. Re-evaluate without resetting usage/limits.
+    if s["status"] == "blocked" and not s["pending"]:
+        s["status"] = "unmet"
+    return s
+
+
 def evaluate(state, observations, *, elapsed_seconds, cost=0, review=None,
              regression=None, writeback=None, pending=None, interrupted=False):
     """Consume one externally measured round; caller supplies cumulative usage.
@@ -58,7 +87,7 @@ def evaluate(state, observations, *, elapsed_seconds, cost=0, review=None,
     criteria_valid(s["criteria"])
     number(elapsed_seconds)
     number(cost)
-    if elapsed_seconds < s["elapsed_seconds"] or cost < s["cost"]:
+    if elapsed_seconds < max(s["elapsed_seconds"], s.get("elapsed_high_water", 0)) or cost < s["cost"]:
         raise ValueError("cumulative usage cannot decrease on resume")
     ids = {c["id"] for c in s["criteria"]}
     if set(observations) - ids:
@@ -75,8 +104,20 @@ def evaluate(state, observations, *, elapsed_seconds, cost=0, review=None,
                           "evidence": evidence, "passed": passed, "check": c["check"]})
     def gate(value):
         return isinstance(value, dict) and value.get("passed") is True and isinstance(value.get("evidence"), str) and bool(value["evidence"].strip())
+    if pending is not None and not isinstance(pending, list):
+        raise ValueError("pending must be a list")
+    # Evaluation can add blockers but cannot remove existing approval/dependency waits.
+    waits = copy.deepcopy(s.get("pending", []))
+    known = {pending_key(i) for i in waits}
+    for item in pending or []:
+        if not isinstance(item, dict) or not item.get("kind"):
+            raise ValueError("pending item kind required")
+        key = pending_key(item)
+        if key not in known:
+            waits.append(copy.deepcopy(item))
+            known.add(key)
     s.update(iterations=s["iterations"] + 1, elapsed_seconds=elapsed_seconds, cost=cost,
-             residuals=residuals, pending=copy.deepcopy(pending or []))
+             residuals=residuals, pending=waits)
     s["next_actions"] = [{"id": r["id"], "check": r["check"]} for r in residuals if not r["passed"]]
     if not gate(review):
         s["next_actions"].append({"id": "independent_review", "check": "fresh reviewer verifies current artifact"})
@@ -100,7 +141,7 @@ def evaluate(state, observations, *, elapsed_seconds, cost=0, review=None,
         status = "unmet_budget"  # A fresh resume never resets exhausted limits.
     elif interrupted:
         status = "interrupted"
-    elif pending:
+    elif s["pending"]:
         status = "blocked"
     elif cost > s["limits"]["cost"] or elapsed_seconds > s["limits"]["elapsed_seconds"] or s["iterations"] > s["limits"]["iterations"]:
         status = "unmet_budget"
@@ -120,7 +161,7 @@ def can_execute(state, *, elapsed_seconds, reserved_cost=0):
     """Preflight before any next action; budgets survive resume."""
     number(elapsed_seconds)
     number(reserved_cost)
-    if elapsed_seconds < state["elapsed_seconds"]:
+    if elapsed_seconds < max(state["elapsed_seconds"], state.get("elapsed_high_water", 0)):
         raise ValueError("cumulative elapsed time cannot decrease")
     reasons = []
     if state.get("pending"):
@@ -133,6 +174,24 @@ def can_execute(state, *, elapsed_seconds, reserved_cost=0):
     if state["cost"] + reserved_cost > state["limits"]["cost"]:
         reasons.append("cost")
     return {"allowed": not reasons, "reasons": reasons}
+
+
+def resume(state, *, elapsed_seconds, reserved_cost=0):
+    """Resume an interruption without spending a round or clearing any blocker.
+
+    Recheck current cumulative time and reserved cost before the next action.
+    Budget/stagnation stops cannot be resumed by changing status here.
+    """
+    if state["status"] not in ("interrupted", "blocked", "unmet", "continue"):
+        raise PermissionError("state cannot resume")
+    s = copy.deepcopy(state)
+    s["status"] = "unmet"
+    readiness = can_execute(s, elapsed_seconds=elapsed_seconds, reserved_cost=reserved_cost)
+    if not readiness["allowed"]:
+        raise PermissionError("resume blocked: " + ",".join(readiness["reasons"]))
+    s["elapsed_high_water"] = max(elapsed_seconds, s.get("elapsed_high_water", 0))
+    s.setdefault("resumptions", []).append({"observed_elapsed_seconds": elapsed_seconds, "reserved_cost": reserved_cost})
+    return s  # No iteration, elapsed/cost usage or limits reset/increment.
 
 
 def revise_goal(state, goal, criteria, reason):
@@ -169,4 +228,5 @@ def load_checkpoint(path):
     criteria_valid(state["criteria"])
     for key in ("iterations", "elapsed_seconds", "cost", "stagnation"):
         number(state[key])
+    number(state.get("elapsed_high_water", 0))
     return state

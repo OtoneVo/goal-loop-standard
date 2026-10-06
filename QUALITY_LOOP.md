@@ -15,3 +15,9 @@ Claude/Codex等の呼出元は開始時に `select_mode` を呼ぶ。複数工�
 プロジェクトのAGENTS.mdとCLAUDE.mdから本ファイルを参照し、タスク着手時に適用判定を必須にする。毎周の実行→検証→修正地点でevaluateを呼ぶ。これは指示読込による統合契約であり、CLIフックのインストールや常駐実行は含まない。実際のClaude/Codexセッションで適用理由・残差・証拠・停止状態を観測するまでは、運用効果は未検証。
 
 テスト: `python -m unittest discover -s tests -p test_goal_loop_quality.py`。既存の判定器APIと仕様テストも併用する。
+
+Pending approval/dependency items survive checkpoint resume and all evaluate calls, including omitted pending or pending=[]. evaluate only adds blockers. Removal uses resolve_pending with a trusted host verifier of the specific item, actual actor authority and real resolution evidence; failed/missing verification raises and preserves the original state. Resolution audit records survive checkpoints and never reset budgets or mark work done. The library cannot authenticate a caller-provided verifier or prevent direct dictionary edits: keep this hook and checkpoint mutation outside model control and wire it to the existing approval system. A self-asserted boolean or successful technical gates are not approval evidence.
+
+After load_checkpoint, call resume(state, elapsed_seconds=current_cumulative_time, reserved_cost=planned_cost), then can_execute before the next action. resume consumes no iteration/usage, checks unresolved pending and exhausted limits, and never marks completion. A rejected resume leaves the checkpoint unchanged.
+
+Resume records an elapsed_high_water observation separately from round usage; all later resume/can_execute/evaluate calls reject cumulative time below it. This prevents time-budget rewind across interruptions.
