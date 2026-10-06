@@ -72,6 +72,10 @@ def decide(context: Mapping[str, object]) -> Decision:
             return "handoff"
         if missing_authority or irreversible_or_external:
             return "hard_block"
+        if recovery_paths_exhausted or failed_approaches >= failure_limit:
+            return "hard_block"
+        if same_method_retries >= same_method_retry_limit:
+            return "replan"
         return "continue"
 
     if safe_alternative:

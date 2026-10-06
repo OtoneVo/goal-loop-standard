@@ -1,5 +1,7 @@
 # goal-loop-standard
 
+高処理タスクの追加品質ゲートは [QUALITY_LOOP.md](QUALITY_LOOP.md)。開始時の適用理由、固定した許容残差、独立レビュー・回帰、累積上限とcheckpointを提供する。既存 `decide` APIは変更しない。実行器・スケジューラ・課金APIは含めない。
+
 **AI エージェントに「成果物を作って終わり」をさせないための、ゴールループ標準。**
 
 仕様（`GOAL_LOOP.md`）と、その仕様どおりに動くかを機械で判定する実装（`goal_loop_decision.py` / `goal_loop_policy.json`）と、回帰テストがセットになっている。文章・設定・判定器が食い違ったらテストが落ちる。
@@ -65,7 +67,7 @@ Python 3.8 以上。**依存パッケージなし**（標準ライブラリの�
 python tests/test_goal_loop_autonomy.py    # 20の自走シナリオ ＋ 6の優先順位ガード
 python tests/validate_goal_loop_visual.py  # 図の構図契約（横長・左→右・ボトルネック最大・最小文字サイズ）
 
-python -m pytest tests/                    # CI から回す場合はこちら（2 passed）
+python -m pytest tests/                    # CI から回す場合はこちら（現在16 passed。ローカル検証、CI workflow未設定）
 ```
 
 テスト関数は `test_` 接頭辞を持たせてある。接頭辞が無いと pytest は1件も収集せず `no tests ran` を返し、**落ちていないだけの偽グリーン**になる。実際に一度踏んでいる。
@@ -78,8 +80,10 @@ python -m pytest tests/                    # CI から回す場合はこちら�
 |---|---|
 | `GOAL_LOOP.md` | 仕組みの正本（§0〜§12 ＋ 設計の経緯） |
 | `goal_loop_policy.json` | 閾値と判定順の設定 |
+| `goal_loop_quality.py` | 上限・証拠ゲート・保留解消の権限確認・checkpointとresume |
+| `QUALITY_LOOP.md` | 品質ループの契約と呼出元の権限確認責務 |
 | `goal_loop_decision.py` | 観測可能な状態だけから次の状態を返す判定器 |
-| `tests/` | 回帰テスト2本＋pytest収集用ラッパ |
+| `tests/` | 既存の自律判定・図検証＋品質ループの回帰テスト |
 | `assets/` | 図（SVG / PNG） |
 
 ## ライセンス
