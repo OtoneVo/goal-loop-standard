@@ -1,5 +1,7 @@
 # goal-loop-standard
 
+高処理タスクの追加品質ゲートは [QUALITY_LOOP.md](QUALITY_LOOP.md)。開始時の適用理由、固定した許容残差、独立レビュー・回帰、累積上限とcheckpointを提供する。既存 `decide` APIは変更しない。実行器・スケジューラ・課金APIは含めない。
+
 **AI エージェントに「成果物を作って終わり」をさせないための、ゴールループ標準。**
 
 仕様（`GOAL_LOOP.md`）と、その仕様どおりに動くかを機械で判定する実装（`goal_loop_decision.py` / `goal_loop_policy.json`）と、回帰テストがセットになっている。文章・設定・判定器が食い違ったらテストが落ちる。
